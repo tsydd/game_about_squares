@@ -1,6 +1,5 @@
 package gameaboutsquares.engine;
 
-import gameaboutsquares.levels.Level;
 import gameaboutsquares.levels.Levels;
 
 import java.util.List;
@@ -11,8 +10,9 @@ import java.util.List;
  */
 public class Main {
     public static void main(String[] args) {
-        Level level = Levels.getLevel(21);
-        List<Color> solution = new Solver(level.getInitialState(), level.getField()).solve();
+        long start = System.currentTimeMillis();
+        List<Color> solution = new Solver(Levels.getLevel(20)).solve();
         System.out.println(solution);
+        System.out.println(System.currentTimeMillis() - start);
     }
 }

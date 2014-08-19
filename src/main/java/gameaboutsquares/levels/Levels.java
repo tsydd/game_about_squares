@@ -1,6 +1,9 @@
 package gameaboutsquares.levels;
 
-import gameaboutsquares.engine.*;
+import gameaboutsquares.engine.Color;
+import gameaboutsquares.engine.Direction;
+import gameaboutsquares.engine.Field;
+import gameaboutsquares.engine.FieldState;
 
 import java.util.Arrays;
 import java.util.List;
