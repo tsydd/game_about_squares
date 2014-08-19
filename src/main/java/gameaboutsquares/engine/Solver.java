@@ -84,7 +84,7 @@ public class Solver {
         if (Engine.isFinal(level.getInitialState(), level.getField())) {
             return Collections.emptyList();
         }
-        addSteps(level.getInitialState(), 1);
+        addSteps(level.getInitialState());
 //        runParallel();
         runSequential();
         Step step = lastStep.get();
@@ -106,7 +106,7 @@ public class Solver {
             if (Engine.isFinal(newFieldState, level.getField())) {
                 lastStep.compareAndSet(null, step);
             } else if (isNewState) {
-                addSteps(newFieldState, step.getDepth() + 1);
+                addSteps(newFieldState);
             }
         }
     }
@@ -120,10 +120,10 @@ public class Solver {
         tasks.stream().forEach(ForkJoinTask::join);
     }
 
-    private void addSteps(FieldState fieldState, int depth) {
+    private void addSteps(FieldState fieldState) {
         if (isAcceptable(fieldState)) {
             fieldState.getSquareStates().keySet().stream()
-                    .forEach(color -> stepQueue.add(new Step(color, fieldState, depth)));
+                    .forEach(color -> stepQueue.add(new Step(color, fieldState)));
         }
     }
 }

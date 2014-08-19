@@ -1,25 +1,11 @@
 apply plugin: 'java'
 
-sourceCompatibility = 1.5
+sourceCompatibility = JavaVersion.VERSION_1_8
 version = '1.0'
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '1.9'
-  distributionUrl = 'http://services.gradle.org/distributions/gradle-1.9-all.zip'
+  gradleVersion = '2.0'
 }
-
-//allprojects {
-//    tasks.withType(JavaCompile).all { JavaCompile compile ->
-//        compile.options.debug = true
-//        compile.options.compilerArgs = [
-//                '-version',
-//                '-implicit:class',
-//                '-processor', 'org.checkerframework.checker.nullness.NullnessChecker'
-//        ]
-//        options.fork = true
-//        options.forkOptions.executable = "$CHECKERFRAMEWORK/checker/bin/javac"
-//    }
-//}
 
 repositories {
     mavenCentral()
@@ -28,5 +14,5 @@ repositories {
 dependencies {
     compile 'edu.washington.cs.types.checker:checker-framework:1.7.5'
 
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile 'org.testng:testng:6.1.1'
 }

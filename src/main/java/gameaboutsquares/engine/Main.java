@@ -11,7 +11,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         long start = System.currentTimeMillis();
-        List<Color> solution = new Solver(Levels.getLevel(20)).solve();
+        List<Color> solution = new Solver(Levels.levels.get(23)).solve();
         System.out.println(solution);
         System.out.println(System.currentTimeMillis() - start);
     }

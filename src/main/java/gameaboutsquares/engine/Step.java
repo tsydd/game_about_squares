@@ -1,7 +1,5 @@
 package gameaboutsquares.engine;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * @author Tsydzik Dmitry
  * @since 8/16/2014.
@@ -9,16 +7,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Step {
     private Color color;
     private FieldState fieldState;
-    private int depth;
-    private static AtomicInteger maxDepth = new AtomicInteger();
 
-    public Step(Color color, FieldState fieldState, int depth) {
+    public Step(Color color, FieldState fieldState) {
         this.color = color;
         this.fieldState = fieldState;
-        this.depth = depth;
-        if (maxDepth.compareAndSet(depth - 1, depth)) {
-            System.out.println(depth);
-        }
     }
 
     public Color getColor() {
@@ -27,9 +19,5 @@ public class Step {
 
     public FieldState getFieldState() {
         return fieldState;
-    }
-
-    public int getDepth() {
-        return depth;
     }
 }

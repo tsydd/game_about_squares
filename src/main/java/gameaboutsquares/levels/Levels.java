@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class Levels {
 
-    private static List<Level> levels = Arrays.asList(
+    public static List<Level> levels = Arrays.asList(
             // 0
             new LevelImpl(
                     new Field().addPosition(Color.RED, 0, 0),
@@ -261,11 +261,32 @@ public class Levels {
                             .add(Color.RED, Direction.RIGHT, 0, 0)
                             .add(Color.GREEN, Direction.UP, 2, 0)
                             .add(Color.YELLOW, Direction.LEFT, 2, 4)
-                            .add(Color.GRAY, Direction.DOWN, 0, 4))
+                            .add(Color.GRAY, Direction.DOWN, 0, 4)),
+            // 22
+            new LevelImpl(
+                    new Field()
+                            .addPosition(Color.RED, 2, 4)
+                            .addArrow(Direction.RIGHT, 0, 2)
+                            .addArrow(Direction.UP, 1, 0)
+                            .addArrow(Direction.DOWN, 1, 4)
+                            .addArrow(Direction.LEFT, 4, 1),
+                    new FieldState()
+                            .add(Color.RED, Direction.RIGHT, 0, 2)
+                            .add(Color.BLUE, Direction.DOWN, 1, 4)
+                            .add(Color.BLACK, Direction.DOWN, 4, 3)),
+            // 23
+            new LevelImpl(
+                    new Field()
+                            .addPosition(Color.RED, 1, 1)
+                            .addPosition(Color.BLUE, 2, 1)
+                            .addPosition(Color.BLACK, 3, 1)
+                            .addArrow(Direction.RIGHT, 0, 2)
+                            .addArrow(Direction.UP, 2, 0)
+                            .addArrow(Direction.DOWN, 2, 4)
+                            .addArrow(Direction.LEFT, 4, 3),
+                    new FieldState()
+                            .add(Color.BLACK, Direction.RIGHT, 0, 2)
+                            .add(Color.BLUE, Direction.DOWN, 1, 4)
+                            .add(Color.RED, Direction.LEFT, 4, 3))
     );
-
-    public static Level getLevel(int index) {
-        return levels.get(index);
-    }
-
 }
