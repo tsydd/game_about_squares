@@ -8,14 +8,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 /**
  * @author Tsydzik Dmitry
@@ -23,11 +23,11 @@ import java.util.function.BiPredicate;
  */
 public class Solver {
 
-    private static Map<BiPredicate<Position, Solver>, Direction> outPredicates = new HashMap<>();
+    private static Map<Direction, BoundsContext> boundsContextMap = new HashMap<>();
 
     private Level level;
     private Map<FieldState, Step> stepMap = new ConcurrentHashMap<>();
-    private Queue<Step> stepQueue = new LinkedBlockingQueue<>();
+    private BlockingQueue<Step> stepQueue = new LinkedBlockingQueue<>();
 
     private AtomicReference<Step> lastStep = new AtomicReference<>();
 
@@ -37,21 +37,46 @@ public class Solver {
     private int maxY = Integer.MIN_VALUE;
 
     static {
-        outPredicates.put((pos, solver) -> pos.getX() > solver.maxX, Direction.LEFT);
-        outPredicates.put((pos, solver) -> pos.getX() < solver.minX, Direction.RIGHT);
-        outPredicates.put((pos, solver) -> pos.getY() > solver.maxY, Direction.DOWN);
-        outPredicates.put((pos, solver) -> pos.getY() < solver.minY, Direction.UP);
+        BiPredicate<Integer, Integer> le = (a, b) -> a <= b;
+        BiPredicate<Integer, Integer> ge = (a, b) -> a >= b;
+        boundsContextMap.put(Direction.RIGHT, new BoundsContext(Position::getX, le, (Solver s) -> s.maxX, Direction.LEFT));
+        boundsContextMap.put(Direction.LEFT, new BoundsContext(Position::getX, ge, (Solver s) -> s.minX, Direction.RIGHT));
+        boundsContextMap.put(Direction.UP, new BoundsContext(Position::getY, le, (Solver s) -> s.maxY, Direction.DOWN));
+        boundsContextMap.put(Direction.DOWN, new BoundsContext(Position::getY, ge, (Solver s) -> s.minY, Direction.UP));
+    }
+
+    private static class BoundsContext {
+        Function<Position, Integer> getDimension;
+        BiPredicate<Integer, Integer> inBoundsPredicate;
+        Function<Solver, Integer> boundFunction;
+        Direction reverseDirection;
+
+        private BoundsContext(Function<Position, Integer> getDimension, BiPredicate<Integer, Integer> inBoundsPredicate, Function<Solver, Integer> boundFunction, Direction reverseDirection) {
+            this.getDimension = getDimension;
+            this.inBoundsPredicate = inBoundsPredicate;
+            this.boundFunction = boundFunction;
+            this.reverseDirection = reverseDirection;
+        }
     }
 
     private boolean isAcceptable(FieldState fs) {
         return !fs.getSquareStates().values().stream()
                 .filter(ss -> {
-                    AtomicBoolean isOut = new AtomicBoolean();
-                    outPredicates.forEach((predicate, direction) -> {
-                        boolean isGoingOut = predicate.test(ss.getPosition(), this) && ss.getDirection() != direction;
-                        isOut.compareAndSet(false, isGoingOut);
-                    });
-                    return isOut.get();
+                    BoundsContext boundsContext = boundsContextMap.get(ss.getDirection());
+
+                    Function<SquareState, Integer> getDimension = ((Function<SquareState, Position>) SquareState::getPosition)
+                            .andThen(boundsContext.getDimension);
+                    BiPredicate<Integer, Integer> inBoundsPredicate = boundsContext.inBoundsPredicate;
+                    Function<Solver, Integer> boundFunction = boundsContext.boundFunction;
+                    Direction reverseDirection = boundsContext.reverseDirection;
+
+                    return !inBoundsPredicate.test(getDimension.apply(ss), boundFunction.apply(this))
+                            && !fs.getSquareStates().values().stream()
+                            .filter(squareState -> squareState != ss)
+                            .filter(squareState -> squareState.getDirection() == reverseDirection)
+                            .filter(squareState -> inBoundsPredicate.negate().test(getDimension.apply(squareState), getDimension.apply(ss)))
+                            .findAny()
+                            .isPresent();
                 })
                 .findAny()
                 .isPresent();
@@ -74,10 +99,18 @@ public class Solver {
         int x = position.getX();
         int y = position.getY();
 
-        if (x < minX) minX = x;
-        if (y < minY) minY = y;
-        if (x > maxX) maxX = x;
-        if (y > maxY) maxY = y;
+        if (x < minX) {
+            minX = x;
+        }
+        if (y < minY) {
+            minY = y;
+        }
+        if (x > maxX) {
+            maxX = x;
+        }
+        if (y > maxY) {
+            maxY = y;
+        }
     }
 
     public List<Color> solve() {
@@ -99,7 +132,12 @@ public class Solver {
 
     private void runSequential() {
         while (lastStep.get() == null) {
-            Step step = stepQueue.poll();
+            Step step;
+            try {
+                step = stepQueue.take();
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Interrupted");
+            }
             FieldState newFieldState = new FieldState(step.getFieldState());
             Engine.click(step.getColor(), level.getField(), newFieldState);
             boolean isNewState = stepMap.putIfAbsent(newFieldState, step) == null;

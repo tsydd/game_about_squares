@@ -4,8 +4,6 @@ import gameaboutsquares.levels.Levels;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.List;
-
 public class SolverTest {
 
     @DataProvider(name = "data")
@@ -18,8 +16,7 @@ public class SolverTest {
     }
 
     @Test(dataProvider = "data")
-    public void testLevelsComplete(int levelIndex) throws Exception {
-        List<Color> solution = new Solver(Levels.levels.get(levelIndex)).solve();
-        System.out.printf("%d: %d: %s", levelIndex, solution.size(), solution);
+    public void testLevelComplete(int levelIndex) throws Exception {
+        new Solver(Levels.levels.get(levelIndex)).solve();
     }
 }
