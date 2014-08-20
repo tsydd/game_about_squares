@@ -9,10 +9,27 @@ import java.util.List;
  * @since 8/16/2014.
  */
 public class Main {
-    public static void main(String[] args) {
+
+    private static void solveLevel(int levelIndex) {
         long start = System.currentTimeMillis();
-        List<Color> solution = new Solver(Levels.levels.get(23)).solve();
-        System.out.println(solution);
-        System.out.println(System.currentTimeMillis() - start);
+        List<Color> solution = new Solver(Levels.levels.get(levelIndex)).solve();
+        System.out.printf("level: %d%ntime: %d%nsteps: %d%nsolution: %s%n%n",
+                levelIndex,
+                System.currentTimeMillis() - start,
+                solution.size(),
+                solution);
+    }
+    public static void main(String[] args) {
+        solveAll();
+    }
+
+    private static void solveAll() {
+        for (int i = 0; i < Levels.levels.size(); i++) {
+            try {
+                solveLevel(i);
+            } catch (NullPointerException ignored) {
+                System.err.printf("level %d is not solved%n%n", i);
+            }
+        }
     }
 }
